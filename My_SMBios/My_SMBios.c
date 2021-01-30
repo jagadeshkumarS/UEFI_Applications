@@ -1,7 +1,5 @@
 #include "My_SMBios.h"
 
-#define SMBIOS_TABLE_GUID {0xeb9d2d31,0x2d88,0x11d3,{0x9a,0x16,0x00,0x90,0x27,0x3f,0xc1,0x4d}}
-
 EFI_STATUS
 
 UefiMain ( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable )
@@ -10,22 +8,43 @@ UefiMain ( IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable )
   
   EFI_SYSTEM_TABLE *gST = NULL;
   EFI_CONFIGURATION_TABLE *gCT = NULL;
-  EFI_GUID VT = SMBIOS_TABLE_GUID;
+  EFI_GUID VT = {0xf2fd1544,0x9794,0x4a2c,{0x99,0x2e,0xe5,0xbb,0xcf,0x20,0xe3,0x94}};
   VOID *SMBT = NULL;
-  
+
   gST = SystemTable;
   gCT = gST->ConfigurationTable;
   
-  Print (L"Configuration Table Address : %p\n",gCT);
+  Print ( L"Configuration Table Address : %p\n",gCT );
   
-  Status = EfiGetSystemConfigurationTable  ( (EFI_GUID *) &VT, (VOID **) &SMBT );
+  Status = EfiGetSystemConfigurationTable ( (EFI_GUID *) &VT, (VOID **) &SMBT );
   if(EFI_ERROR(Status))
   {
-	Print (L"EfiGetSystemConfigurationTable : ERROR\n");
+	Print ( L"EfiGetSystemConfigurationTable : ERROR\n" );
 	return Status;
   }
 
-  Print ( L"Configuration Table Address : %p\n", VT );
+  Print ( L"SMBios Table Address : %p\n", SMBT );
   
-  return Status;
+/*
+  UINTN *mem = (UINTN *)SMBT - 16;
+  int length, i;
+  unsigned char checksum;
+  while (1)
+  {
+    if (mem[0] == '_' && mem[1] == 'S' && mem[2] == 'M' && mem[3] == '_')
+	{
+      length = (int) mem[5];
+      checksum = 0;
+      for(i = 0; i < length; i++)
+	  {
+        checksum += (unsigned char)mem[i];
+      }
+      if(checksum == 0) break;
+    }
+    mem += 16;
+  }
+  Print ( L"%p\n",mem );
+*/
+
+  return EFI_SUCCESS;
 }
